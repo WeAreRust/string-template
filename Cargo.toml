@@ -1,0 +1,11 @@
+cargo-features = ["edition"]
+
+[package]
+name = "string-template"
+edition = "2018"
+version = "0.1.0"
+authors = ["Josh Leeb-du Toit <josh.leebdutoit@gmail.com>"]
+
+[dependencies]
+pest = "1.0.6"
+pest_derive = "1.0.8"

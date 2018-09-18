@@ -1,0 +1,10 @@
+wsp = _{ ( " " | "\t" ) }
+nl = _{ "\n" }
+
+ident = @{ ('a'..'z' | 'A'..'Z' | '0'..'9' | "_")+ }
+decl = _{ ident ~ wsp* ~ "::=" ~ wsp+ ~ "<<" ~ nl? }
+terminator = _{ ">>" }
+content = { (!terminator ~ any)* }
+template = _{ decl ~ nl? ~ content ~ terminator }
+
+file = _{ soi ~ (template | nl)* ~ eoi }
