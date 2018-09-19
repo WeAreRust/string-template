@@ -1,0 +1,19 @@
+wsp = _{ ( " " | "\t" ) }
+nl = _{ "\n" | "\r" }
+
+delim_open = _{ "<<" }
+delim_close = _{ ">>" }
+delim = { (delim_open | delim_close ) }
+
+ident = @{ ('a'..'z' | 'A'..'Z' | '0'..'9' | "_")+ }
+
+param = @{ ident }
+param_decl = _{ param ~ wsp* ~ ","? ~ wsp* }
+param_group = _{ "(" ~ param_decl* ~ ")" }
+
+escape = @{ "\\" ~ delim }
+decl = _{ ident ~ param_group? ~ wsp+ ~ "::=" ~ wsp+ }
+template = ${ (escape | (!delim ~ any))+ }
+
+group = _{ decl ~ nl? ~ delim_open ~ nl? ~ template? ~ delim_close }
+file = _{ soi ~ (group | nl)* ~ eoi }
