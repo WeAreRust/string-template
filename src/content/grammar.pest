@@ -1,0 +1,16 @@
+wsp = _{ ( " " | "\t" ) }
+nl = _{ "\n" | "\r" }
+
+delim_open = _{ "<" }
+delim_close = _{ ">" }
+delim = { (delim_open | delim_close) }
+
+ident = @{ ('a'..'z' | 'A'..'Z' | '0'..'9' | "_")+ }
+
+escape = @{ "\\" ~ delim }
+directive = { delim_open ~ (escape | (!delim ~ any))+ ~ delim_close }
+
+raw_content = { (!(eoi | delim) ~ any) }
+raw = { (escape | raw_content)+ }
+
+content = _{ soi ~ (raw | directive)* ~ eoi }
