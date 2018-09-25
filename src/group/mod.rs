@@ -1,6 +1,6 @@
-// TODO: Do better than `*` import.
+use pest::{iterators::Pairs, Error, Parser};
 #[allow(unused_imports)]
-use pest_derive::*;
+use pest_derive::*; //  TODO: Do better than `*` import.
 
 // Forces the grammar to be rebuilt when compiling in debug mode. For more info see
 // https://docs.rs/pest_derive/1.0.8/pest_derive/#pest-files
@@ -9,7 +9,11 @@ const _GRAMMAR: &'static str = include_str!("grammar.pest");
 
 #[derive(Parser)]
 #[grammar = "group/grammar.pest"]
-pub struct GroupParser;
+struct GroupParser;
+
+pub fn parse(content: &str) -> Result<Pairs<'_, Rule>, Error<'_, Rule>> {
+    GroupParser::parse(Rule::group, content)
+}
 
 #[cfg(test)]
 mod tests {
