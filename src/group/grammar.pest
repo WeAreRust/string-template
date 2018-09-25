@@ -1,19 +1,20 @@
-wsp = _{ ( " " | "\t" ) }
 nl = _{ "\n" | "\r" }
+whitespace = _{ " " | "\t" }
+extern_comment = _{ "//" ~ (!(nl | eoi) ~ any)* }
 
-delim_open = _{ "<<" }
-delim_close = _{ ">>" }
-delim = { (delim_open | delim_close) }
+delim_open = _{ "<<" | "<%" }
+delim_close = _{ ">>\n" | "%>\n" }
+delim = { delim_open | delim_close }
 
 ident = @{ ('a'..'z' | 'A'..'Z' | '0'..'9' | "_")+ }
 
 param = @{ ident }
-param_decl = _{ param ~ wsp* ~ ","? ~ wsp* }
+param_decl = _{ param ~ ","?}
 param_group = _{ "(" ~ param_decl* ~ ")" }
 
 escape = @{ "\\" ~ delim }
-decl = _{ ident ~ param_group? ~ wsp+ ~ "::=" ~ wsp+ }
+decl = _{ ident ~ param_group? ~ "::="}
 template = ${ (escape | (!delim ~ any))+ }
 
 group = _{ decl ~ nl? ~ delim_open ~ nl? ~ template? ~ delim_close }
-file = _{ soi ~ (group | nl)* ~ eoi }
+file = _{ soi ~ (nl | extern_comment | group)* ~ eoi }

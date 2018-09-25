@@ -12,7 +12,7 @@ const _GRAMMAR: &'static str = include_str!("grammar.pest");
 struct GroupParser;
 
 pub fn parse(content: &str) -> Result<Pairs<'_, Rule>, Error<'_, Rule>> {
-    GroupParser::parse(Rule::group, content)
+    GroupParser::parse(Rule::file, content)
 }
 
 #[cfg(test)]
@@ -54,28 +54,40 @@ mod tests {
 
     #[test]
     fn basic_template() {
-        let parsed = parse(Rule::group, "T ::= <<content>>");
+        let parsed = parse(Rule::group, "T ::= <<content>>\n");
         assert_eq!(parsed, [(Rule::ident, "T"), (Rule::template, "content")]);
     }
 
     #[test]
     fn empty_template() {
-        let parsed = parse(Rule::group, "T ::= <<>>");
+        let parsed = parse(Rule::group, "T ::= <<>>\n");
         assert_eq!(parsed, [(Rule::ident, "T")]);
     }
 
     #[test]
     fn escaped_template() {
-        let parsed = parse(Rule::group, "T ::= <<\\<<content\\>>>>");
+        let parsed = parse(Rule::group, "T ::= <<\\<<content>>>>\n");
         assert_eq!(
             parsed,
-            [(Rule::ident, "T"), (Rule::template, "\\<<content\\>>")]
+            [(Rule::ident, "T"), (Rule::template, "\\<<content>>")]
+        );
+    }
+
+    #[test]
+    fn escaped_template_result() {
+        let parsed = parse(Rule::group, "T ::= <<Result<(), Box<Error>>>>\n");
+        assert_eq!(
+            parsed,
+            [
+                (Rule::ident, "T"),
+                (Rule::template, "Result<(), Box<Error>>")
+            ]
         );
     }
 
     #[test]
     fn group_file() {
-        let parsed = parse(Rule::file, "A ::= <<c_A>>\nB ::= <<c_B>>");
+        let parsed = parse(Rule::file, "A ::= <<c_A>>\nB ::= <<c_B>>\n");
         assert_eq!(
             parsed,
             [
@@ -84,6 +96,30 @@ mod tests {
                 (Rule::ident, "B"),
                 (Rule::template, "c_B")
             ]
+        );
+    }
+
+    #[test]
+    fn comment_line() {
+        let parsed = parse(Rule::file, "// this is a comment");
+        assert_eq!(parsed, []);
+    }
+
+    #[test]
+    fn group_with_comments() {
+        let parsed = parse(Rule::group, "A ::= <<\n// A\n c_A>>\n");
+        assert_eq!(
+            parsed,
+            [(Rule::ident, "A"), (Rule::template, "// A\n c_A"),]
+        );
+    }
+
+    #[test]
+    fn file_with_comments() {
+        let parsed = parse(Rule::file, "// No show\nA ::= <<\n// A\n c_A>>\n");
+        assert_eq!(
+            parsed,
+            [(Rule::ident, "A"), (Rule::template, "// A\n c_A"),]
         );
     }
 }

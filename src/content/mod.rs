@@ -42,8 +42,26 @@ mod tests {
 
     #[test]
     fn escaped_directive_in_raw() {
-        let parsed = parse(Rule::content, "a \\<directive\\> b");
-        assert_eq!(parsed, [(Rule::raw, "a \\<directive\\> b"),]);
+        let parsed = parse(Rule::content, "a \\<directive> b");
+        assert_eq!(parsed, [(Rule::raw, "a \\<directive> b"),]);
+    }
+
+    #[test]
+    fn error_case() {
+        let parsed = parse(
+            Rule::content,
+            "ReadonlyMap\\<<field.keyType>, <field.valueType>>,",
+        );
+        assert_eq!(
+            parsed,
+            [
+                (Rule::raw, "ReadonlyMap\\<"),
+                (Rule::directive, "<field.keyType>"),
+                (Rule::raw, ", "),
+                (Rule::directive, "<field.valueType>"),
+                (Rule::raw, ">,"),
+            ]
+        );
     }
 
     #[test]
